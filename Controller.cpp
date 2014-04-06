@@ -105,7 +105,6 @@ void* scanInputSignals(void *param){
 void* startScanner(void *param){
 	while(true){
 		scanInputSignals(param);
-		sleep(1);
 	}
 }
 
@@ -116,20 +115,7 @@ void* runMotor(void *param){
 		sem_wait(&commands_semaphore);
 		pthread_mutex_lock(&signals_mutex);
 
-//		if(signals.lastCommand == "m"){
-//			if(signals.doorClosing){
-//				signals.motorDown = false;
-//				signals.motorUp = true;
-//				motor->reOpenDoor();
-//			}
-//
-//			else if(signals.doorOpening){
-//				signals.motorUp = false;
-//				motor->stopDoor();
-//			}
-//		}
-
-		/*else*/ if(signals.lastCommand == "i" || signals.lastCommand == "m"){
+		if(signals.lastCommand == "i" || signals.lastCommand == "m"){
 			if(signals.doorClosing){
 				signals.motorDown = false;
 				signals.motorUp = true;
@@ -158,12 +144,18 @@ void* runMotor(void *param){
 				signals.motorUp = false;
 			}
 
-			else if(signals.doorOpen ||
-					(signals.interrupted && signals.doorOpening) ||
-					(signals.motorOvercurrent && signals.doorOpening)){
+			else if(signals.doorOpen){
 				signals.motorOvercurrent = false;
 				signals.motorDown = true;
 				motor->closeDoor();
+				signals.motorDown = false;
+			}
+
+			else if((signals.interrupted && signals.doorOpening)||
+					(signals.motorOvercurrent && signals.doorOpening)){
+				signals.motorOvercurrent = false;
+				signals.motorDown = true;
+				motor->reCloseDoor();
 				signals.motorDown = false;
 			}
 

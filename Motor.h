@@ -23,6 +23,7 @@ public:
 	void openDoor();
 	void reOpenDoor();
 	void closeDoor();
+	void reCloseDoor();
 	void stopDoor();
 	struct sigaction sa;
 

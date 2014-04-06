@@ -93,7 +93,7 @@ void Motor::openDoor(){
 	tim.tv_nsec = 0;
 
 	cout << "I am opening the door.\n";
-	cout << "\tOpening for: " << (10 - signals.secondsPassed) << " seconds.\n";
+	//cout << "\tOpening for: " << (10 - signals.secondsPassed) << " seconds.\n";
 	cout.flush();
 
 	int i = 1;
@@ -108,8 +108,8 @@ void Motor::openDoor(){
 			return;
 		}
 		signals.secondsPassed++;
-		cout << "\t\tOpening for " << i++ << " seconds...\n";
-		cout.flush();
+		//cout << "\t\tOpening for " << i++ << " seconds...\n";
+		//cout.flush();
 	}
 	
 	out8(portBHandle, 0x08);
@@ -126,6 +126,14 @@ void Motor::openDoor(){
 void Motor::reOpenDoor(){
 	signals.secondsPassed--;
 	openDoor();
+}
+
+/**
+ * Same as reOpenDoor except it's to close the door.
+ */
+void Motor::reCloseDoor(){
+	signals.secondsPassed++;
+	closeDoor();
 }
 
 /**
@@ -148,7 +156,7 @@ void Motor::closeDoor(){
 	tim.tv_nsec = 0;
 
 	cout << "I am closing the door.\n\tI am turning on the infrared beam.\n";
-	cout << "\tClosing for: " << signals.secondsPassed << " seconds.\n";
+	//cout << "\tClosing for: " << signals.secondsPassed << " seconds.\n";
 	cout.flush();
 
 	out8(portBHandle, 0xE);
@@ -163,8 +171,8 @@ void Motor::closeDoor(){
 			out8(portBHandle, 0x08);
 			return;
 		}
-		cout << "\t\tClosing for " << i++ << " seconds...\n";
-		cout.flush();
+		//cout << "\t\tClosing for " << i++ << " seconds...\n";
+		//cout.flush();
 		signals.secondsPassed--;
 	}
 

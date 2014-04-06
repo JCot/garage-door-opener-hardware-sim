@@ -82,7 +82,7 @@ void* Input::processInput(){
 		int input = in8(portAHandle);
 
 		//Depending on machine first 3 bits may be 0 or 1. If bits are 1 need to add 224 to check to get desired result.
-		if(/*input == 16 ||*/ input == 241 || input == 242){
+		if(input == 240 || input == 241 || input == 242){
 			cout.flush();
 			commands.push("r");
 		}
