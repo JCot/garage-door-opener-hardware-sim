@@ -116,24 +116,29 @@ void* runMotor(void *param){
 		sem_wait(&commands_semaphore);
 		pthread_mutex_lock(&signals_mutex);
 
-		if(signals.lastCommand == "m"){
+//		if(signals.lastCommand == "m"){
+//			if(signals.doorClosing){
+//				signals.motorDown = false;
+//				signals.motorUp = true;
+//				motor->reOpenDoor();
+//			}
+//
+//			else if(signals.doorOpening){
+//				signals.motorUp = false;
+//				motor->stopDoor();
+//			}
+//		}
+
+		/*else*/ if(signals.lastCommand == "i" || signals.lastCommand == "m"){
 			if(signals.doorClosing){
 				signals.motorDown = false;
 				signals.motorUp = true;
-				motor->openDoor();
+				motor->reOpenDoor();
 			}
 
-			else if(signals.doorOpening){
+			else if(signals.doorOpening && signals.lastCommand == "m"){
 				signals.motorUp = false;
 				motor->stopDoor();
-			}
-		}
-
-		else if(signals.lastCommand == "i"){
-			if(signals.doorClosing){
-				signals.motorDown = false;
-				signals.motorUp = true;
-				motor->openDoor();
 			}
 		}
 
@@ -183,6 +188,7 @@ int main(int argc, char *argv[]) {
 	cout << "The door is closed, motor is off, and infrared beam is off.\n";
 	cout << "Enter 'r' to raise/lower door, 'm' for motor overcurrent,"
 			<< " 'i' for infrared beam interrupt.\n\n";
+	cout.flush();
 
 	pthread_mutex_init(&signals_mutex, NULL);
 	sem_init(&commands_semaphore, 0, 0);

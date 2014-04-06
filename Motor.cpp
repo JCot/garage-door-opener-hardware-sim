@@ -10,6 +10,9 @@
 #include <iostream>
 #include <unistd.h>
 #include <time.h>
+#include <hw/inout.h>
+#include <sys/neutrino.h>
+#include <sys/mman.h>
 
 using namespace std;
 
@@ -39,6 +42,28 @@ Motor::Motor() {
 	sa.sa_flags = 0;
 	sa.sa_handler = sigintHandler;
 	signal(SIGUSR1, sigintHandler);
+
+	ThreadCtl(_NTO_TCTL_IO, NULL);
+
+	portAHandle;
+	portBHandle;
+	directionHandle;
+
+	portAHandle = mmap_device_io(1, DATA_PORT_A);
+	portBHandle = mmap_device_io(1, DATA_PORT_B);
+	directionHandle = mmap_device_io(1, DATA_DIRECTION);
+
+	if(portAHandle == MAP_DEVICE_FAILED){
+		perror("Failed to map control register");
+	}
+
+	if(portBHandle == MAP_DEVICE_FAILED){
+		perror("Failed to map control register");
+	}
+
+	if(directionHandle == MAP_DEVICE_FAILED){
+		perror("Failed to map control register");
+	}
 }
 
 /**
@@ -72,12 +97,14 @@ void Motor::openDoor(){
 	cout.flush();
 
 	int i = 1;
+	out8(portBHandle, 0x09);
 	while(signals.secondsPassed < 10){
 		if(nanosleep(&tim, NULL) == -1 || signals.interruptMovement){
 			#ifdef DEBUG_V
 			cout << "I was interrupted; returning!\n";
 			#endif
 			signals.interruptMovement = false;
+			out8(portBHandle, 0x08);
 			return;
 		}
 		signals.secondsPassed++;
@@ -85,10 +112,20 @@ void Motor::openDoor(){
 		cout.flush();
 	}
 	
+	out8(portBHandle, 0x08);
 	cout << "Door opened.\n";
 	cout.flush();
 	signals.doorOpen = true;
 	signals.doorOpening = false;
+}
+
+/**
+ * Temporary (hopefully) fix for when the door stops opening a second early
+ * when opening from a non full closed position.
+ */
+void Motor::reOpenDoor(){
+	signals.secondsPassed--;
+	openDoor();
 }
 
 /**
@@ -114,6 +151,7 @@ void Motor::closeDoor(){
 	cout << "\tClosing for: " << signals.secondsPassed << " seconds.\n";
 	cout.flush();
 
+	out8(portBHandle, 0xE);
 	int i = 1;
 	while(signals.secondsPassed > 0){
 		if(nanosleep(&tim, NULL) == -1 || signals.interruptMovement){
@@ -122,6 +160,7 @@ void Motor::closeDoor(){
 			#endif
 			signals.interruptMovement = false;
 			signals.irBeamOn = false;
+			out8(portBHandle, 0x08);
 			return;
 		}
 		cout << "\t\tClosing for " << i++ << " seconds...\n";
@@ -129,6 +168,7 @@ void Motor::closeDoor(){
 		signals.secondsPassed--;
 	}
 
+	out8(portBHandle, 0x08);
 	cout << "Door closed.\n";
 	cout.flush();
 	signals.doorClosed = true;
@@ -146,6 +186,8 @@ void Motor::closeDoor(){
 void Motor::stopDoor(){
 	cout << "I am stopping the door.\n";
 	cout.flush();
+
+	out8(portBHandle, 0x08);
 
 	cout << "Door stopped.\n";
 	cout.flush();

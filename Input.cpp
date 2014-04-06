@@ -59,41 +59,40 @@ void* Input::processInput(){
 		perror("Failed to map control register");
 	}
 
-	int a = in8(portAHandle);
-	int b = in8(portBHandle);
-	int c;
-
-	cout << "A: " << a << "\n";
-	cout << "B: " << b << "\n";
-	cout.flush();
-
 	out8(directionHandle, 0x10);
 	out8(portBHandle, 0x00);
 	sleep(1);
-	out8(portBHandle, 0x09);
-
-	a = in8(portAHandle);
-	b = in8(portBHandle);
-	c = in8(directionHandle);
-
-	cout << "A: " << a << "\n";
-	cout << "B: " << b << "\n";
-	cout << "C: " << c;
-	cout.flush();
+	out8(portBHandle, 0x08);
 
 	while(true){
-		string input;
+//		string input;
 		#ifndef SUPPRESS
 		cout << "Please enter a command: ";
+		cout.flush();
 		#endif
-		getline(cin, input);
+//		getline(cin, input);
+//
+//		if(input == "m" || input == "i" || input == "r"){
+//			commands.push(input);
+//		}
+//
+//		else{
+//			cout << "Incorrect input.\n";
+//		}
+		int input = in8(portAHandle);
 
-		if(input == "m" || input == "i" || input == "r"){
-			commands.push(input);
+		//Depending on machine first 3 bits may be 0 or 1. If bits are 1 need to add 224 to check to get desired result.
+		if(/*input == 16 ||*/ input == 241 || input == 242){
+			cout.flush();
+			commands.push("r");
 		}
 
-		else{
-			cout << "Incorrect input.\n";
+		else if(input == 232){
+			commands.push("m");
+		}
+
+		else if(input == 228){
+			commands.push("i");
 		}
 
 		sleep(1);

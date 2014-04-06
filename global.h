@@ -41,4 +41,9 @@ extern pthread_t scanner;
 extern pthread_t motorThread;
 extern queue <string> commands;
 
+const static int DATA_BASE_ADDRESS = 0x280;
+const static int DATA_PORT_A = DATA_BASE_ADDRESS + 0x08;
+const static int DATA_PORT_B = DATA_BASE_ADDRESS + 0x09;
+const static int DATA_DIRECTION = DATA_BASE_ADDRESS + 0xb;
+
 #endif /* GLOBAL_H_ */
