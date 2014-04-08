@@ -138,7 +138,7 @@ void* runMotor(void *param){
 			}
 			#endif
 
-			if(signals.doorClosed || (signals.interrupted && signals.doorClosing)){
+			if(signals.doorClosed){
 				signals.motorUp = true;
 				motor->openDoor();
 				signals.motorUp = false;
@@ -149,6 +149,12 @@ void* runMotor(void *param){
 				signals.motorDown = true;
 				motor->closeDoor();
 				signals.motorDown = false;
+			}
+
+			else if(signals.interrupted && signals.doorClosing){
+				signals.motorUp = true;
+				motor->reOpenDoor();
+				signals.motorUp = false;
 			}
 
 			else if((signals.interrupted && signals.doorOpening)||

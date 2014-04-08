@@ -129,14 +129,6 @@ void Motor::reOpenDoor(){
 }
 
 /**
- * Same as reOpenDoor except it's to close the door.
- */
-void Motor::reCloseDoor(){
-	signals.secondsPassed++;
-	closeDoor();
-}
-
-/**
 * Close the garage door.
 * The controller will lower the door:
 * - When the user presses the remote pushbutton and the door is in the full 
@@ -182,6 +174,14 @@ void Motor::closeDoor(){
 	signals.doorClosed = true;
 	signals.irBeamOn = false;
 	signals.doorClosing = false;
+}
+
+/**
+ * Same as reOpenDoor except it's to close the door.
+ */
+void Motor::reCloseDoor(){
+	signals.secondsPassed++;
+	closeDoor();
 }
 
 /**
