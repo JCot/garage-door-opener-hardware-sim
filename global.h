@@ -40,6 +40,7 @@ extern pthread_t input;
 extern pthread_t scanner;
 extern pthread_t motorThread;
 extern queue <string> commands;
+extern bool runAsSoftwareSim;
 
 const static int DATA_BASE_ADDRESS = 0x280;
 const static int DATA_PORT_A = DATA_BASE_ADDRESS + 0x08;

@@ -43,26 +43,24 @@ Motor::Motor() {
 	sa.sa_handler = sigintHandler;
 	signal(SIGUSR1, sigintHandler);
 
-	ThreadCtl(_NTO_TCTL_IO, NULL);
+	if(!runAsSoftwareSim){
+		ThreadCtl(_NTO_TCTL_IO, NULL);
 
-	portAHandle;
-	portBHandle;
-	directionHandle;
+		portAHandle = mmap_device_io(1, DATA_PORT_A);
+		portBHandle = mmap_device_io(1, DATA_PORT_B);
+		directionHandle = mmap_device_io(1, DATA_DIRECTION);
 
-	portAHandle = mmap_device_io(1, DATA_PORT_A);
-	portBHandle = mmap_device_io(1, DATA_PORT_B);
-	directionHandle = mmap_device_io(1, DATA_DIRECTION);
+		if(portAHandle == MAP_DEVICE_FAILED){
+			perror("Failed to map control register");
+		}
 
-	if(portAHandle == MAP_DEVICE_FAILED){
-		perror("Failed to map control register");
-	}
+		if(portBHandle == MAP_DEVICE_FAILED){
+			perror("Failed to map control register");
+		}
 
-	if(portBHandle == MAP_DEVICE_FAILED){
-		perror("Failed to map control register");
-	}
-
-	if(directionHandle == MAP_DEVICE_FAILED){
-		perror("Failed to map control register");
+		if(directionHandle == MAP_DEVICE_FAILED){
+			perror("Failed to map control register");
+		}
 	}
 }
 
@@ -93,7 +91,9 @@ void Motor::openDoor(){
 	tim.tv_nsec = 0;
 
 	cout << "I am opening the door.\n";
-	//cout << "\tOpening for: " << (10 - signals.secondsPassed) << " seconds.\n";
+	if(runAsSoftwareSim){
+		cout << "\tOpening for: " << (10 - signals.secondsPassed) << " seconds.\n";
+	}
 	cout.flush();
 
 	int i = 1;
@@ -108,8 +108,10 @@ void Motor::openDoor(){
 			return;
 		}
 		signals.secondsPassed++;
-		//cout << "\t\tOpening for " << i++ << " seconds...\n";
-		//cout.flush();
+		if(runAsSoftwareSim){
+			cout << "\t\tOpening for " << i++ << " seconds...\n";
+			cout.flush();
+		}
 	}
 	
 	out8(portBHandle, 0x08);
@@ -148,10 +150,14 @@ void Motor::closeDoor(){
 	tim.tv_nsec = 0;
 
 	cout << "I am closing the door.\n\tI am turning on the infrared beam.\n";
-	//cout << "\tClosing for: " << signals.secondsPassed << " seconds.\n";
+	if(runAsSoftwareSim){
+		cout << "\tClosing for: " << signals.secondsPassed << " seconds.\n";
+	}
 	cout.flush();
 
-	out8(portBHandle, 0xE);
+	if(!runAsSoftwareSim){
+		out8(portBHandle, 0xE);
+	}
 	int i = 1;
 	while(signals.secondsPassed > 0){
 		if(nanosleep(&tim, NULL) == -1 || signals.interruptMovement){
@@ -160,15 +166,21 @@ void Motor::closeDoor(){
 			#endif
 			signals.interruptMovement = false;
 			signals.irBeamOn = false;
-			out8(portBHandle, 0x08);
+			if(!runAsSoftwareSim){
+				out8(portBHandle, 0x08);
+			}
 			return;
 		}
-		//cout << "\t\tClosing for " << i++ << " seconds...\n";
-		//cout.flush();
+		if(runAsSoftwareSim){
+			cout << "\t\tClosing for " << i++ << " seconds...\n";
+			cout.flush();
+		}
 		signals.secondsPassed--;
 	}
 
-	out8(portBHandle, 0x08);
+	if(!runAsSoftwareSim){
+		out8(portBHandle, 0x08);
+	}
 	cout << "Door closed.\n";
 	cout.flush();
 	signals.doorClosed = true;
@@ -195,7 +207,9 @@ void Motor::stopDoor(){
 	cout << "I am stopping the door.\n";
 	cout.flush();
 
-	out8(portBHandle, 0x08);
+	if(!runAsSoftwareSim){
+		out8(portBHandle, 0x08);
+	}
 
 	cout << "Door stopped.\n";
 	cout.flush();

@@ -105,6 +105,9 @@ void* scanInputSignals(void *param){
 void* startScanner(void *param){
 	while(true){
 		scanInputSignals(param);
+		if(runAsSoftwareSim) {
+			sleep(1);
+		}
 	}
 }
 
@@ -119,7 +122,13 @@ void* runMotor(void *param){
 			if(signals.doorClosing){
 				signals.motorDown = false;
 				signals.motorUp = true;
-				motor->reOpenDoor();
+
+				if(runAsSoftwareSim) {
+					motor->openDoor();
+				}
+				else{
+					motor->reOpenDoor();
+				}
 			}
 
 			else if(signals.doorOpening && signals.lastCommand == "m"){
@@ -153,7 +162,12 @@ void* runMotor(void *param){
 
 			else if(signals.interrupted && signals.doorClosing){
 				signals.motorUp = true;
-				motor->reOpenDoor();
+				if(runAsSoftwareSim) {
+					motor->openDoor();
+				}
+				else{
+					motor->reOpenDoor();
+				}
 				signals.motorUp = false;
 			}
 
@@ -161,7 +175,12 @@ void* runMotor(void *param){
 					(signals.motorOvercurrent && signals.doorOpening)){
 				signals.motorOvercurrent = false;
 				signals.motorDown = true;
-				motor->reCloseDoor();
+				if(runAsSoftwareSim) {
+					motor->closeDoor();
+				}
+				else{
+					motor->reCloseDoor();
+				}
 				signals.motorDown = false;
 			}
 
@@ -182,6 +201,16 @@ int main(int argc, char *argv[]) {
 	Controller control;
 	Motor *motor = new Motor();
 	pthread_attr_t attr;
+
+	if(argc > 1){
+		if(strcmp(argv[1], "-s") == 0){
+			runAsSoftwareSim = true;
+		}
+	}
+	else{
+		runAsSoftwareSim = false;
+	}
+
 	cout << "\nWelcome to the Garage Door Opener!\n";
 	cout << "The door is closed, motor is off, and infrared beam is off.\n";
 	cout << "Enter 'r' to raise/lower door, 'm' for motor overcurrent,"
